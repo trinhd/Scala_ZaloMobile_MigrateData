@@ -4,16 +4,27 @@ import java.sql.Statement
 import java.sql.Connection
 import java.sql.ResultSet
 
+import scala.util.control.Breaks._
+
 object Utils {
   def sqliteSelect(dbpath: String, query: String, outputfilepath: String) = {
     val conn = SQLiteConnect.dbConnect(dbpath)
     var strInsert = "";
     try {
-      val stmt = conn.createStatement()
+      val stmt: Statement = conn.createStatement()
       val rs: ResultSet = stmt.executeQuery(query)
+      var iCount = 0
 
       while (rs.next()) {
-        strInsert += util.Properties.lineSeparator + "INSERT INTO chat_content (recid, currentUserUid, message, url, url_thumb, localpath, timestamp, senderUid, senderName, ownerId, type, state, receiverUid, minigame, header, footer, secret, metadata_1, metadata_2, state_sync, cliMsgIdReply, data1, data2, data3) VALUES (" + rs.getString("recid") + ", " + rs.getString("currentUserUid") + ", " + rs.getString("message") + ", " + rs.getString("url") + ", " + rs.getString("url_thumb") + ", " + rs.getString("localpath") + ", " + rs.getString("timestamp") + ", " + rs.getString("senderUid") + ", " + rs.getString("senderName") + ", " + rs.getString("ownerId") + ", " + rs.getString("type") + ", " + rs.getString("state") + ", " + rs.getString("receiverUid") + ", " + rs.getString("minigame") + ", " + rs.getString("header") + ", " + rs.getString("footer") + ", " + rs.getString("secret") + ", " + rs.getString("metadata_1") + ", " + rs.getString("metadata_2") + ", " + rs.getString("state_sync") + ", " + rs.getString("cliMsgIdReply") + ", " + rs.getString("data1") + ", " + rs.getString("data2") + ", " + rs.getString("data3") + ")"
+        var data1 = rs.getBytes("data1")
+        if (data1 != null) {
+          println(scala.io.Source.fromBytes(data1).mkString)
+          //data1 = "'" + data1.toString() + "'"
+        } else println(data1)
+        strInsert += util.Properties.lineSeparator + "INSERT INTO chat_content (currentUserUid, message, url, url_thumb, localpath, timestamp, senderUid, senderName, ownerId, type, state, receiverUid, minigame, header, footer, secret, metadata_1, metadata_2, state_sync, cliMsgIdReply, data1, data2, data3) VALUES ('" + rs.getString("currentUserUid") + "', '" + rs.getString("message") + "', '" + rs.getString("url") + "', '" + rs.getString("url_thumb") + "', '" + rs.getString("localpath") + "', " + rs.getString("timestamp") + ", '" + rs.getString("senderUid") + "', '" + rs.getString("senderName") + "', '" + rs.getString("ownerId") + "', " + rs.getString("type") + ", " + rs.getString("state") + ", '" + rs.getString("receiverUid") + "', '" + rs.getString("minigame") + "', '" + rs.getString("header") + "', '" + rs.getString("footer") + "', '" + rs.getString("secret") + "', '" + rs.getString("metadata_1") + "', '" + rs.getString("metadata_2") + "', " + rs.getString("state_sync") + ", " + rs.getString("cliMsgIdReply") + ", " + data1 + ", " + rs.getString("data2") + ", " + rs.getString("data3") + ")"
+        iCount += 1
+        println(iCount)
+        if (iCount > 3) break
       }
 
       OutputFileWriter.writeFile(outputfilepath, false, strInsert)
